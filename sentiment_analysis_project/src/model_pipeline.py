@@ -1,11 +1,7 @@
-import pickle
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.base import BaseEstimator, TransformerMixin
-import streamlit as st
-import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
+from sklearn.pipeline import Pipeline
 import spacy
-nlp = spacy.load("en_core_web_sm")
 import re
 
 class TextCleaner(BaseEstimator, TransformerMixin):
@@ -19,26 +15,16 @@ class TextCleaner(BaseEstimator, TransformerMixin):
         return X.apply(self.text_cleaning)  # apply text cleaning function to each row
 
     def text_cleaning(self, text):
+        nlp = spacy.load("en_core_web_sm")
         doc = nlp(text)
         cleaned_text = ' '.join([token.lemma_ for token in doc])  # lemmatization
         cleaned_text = re.sub(r'([^\s\w]|_)+', ' ', cleaned_text)  # keeps only letters and numbers
         return re.sub(r'\s+', ' ', cleaned_text).strip()  # removes extra spaces
 
-model = pickle.load(open('sentiment-analysis-logreg.pkl', 'rb'))
 
-def main(): 
-    st.title("Sentiment Analysis")
-
-    comment = st.text_input("Comment","")
-
-    if st.button("Predict"):
-
-        prediction = model.predict(pd.Series(comment))
-
-        if prediction == 1:
-            st.badge('This is a positive comment!')
-        else:
-            st.badge('This is a negative comment!')
-
-if __name__=='__main__': 
-    main()
+def pipeline_function(model):
+    return Pipeline([
+        ('text_cleaner', TextCleaner()),  # custom text cleaning transformer
+        ('vectorizer', TfidfVectorizer(max_features=500)),  # convert text to numerical features using tf-idf
+        ('classifier', model)  # classifier model
+    ])
