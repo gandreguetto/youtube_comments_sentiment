@@ -38,7 +38,6 @@ def main():
         pipe.fit(X_train, y_train)
 
         print('Making predictions')
-
         # generates predictions
         predictions = pipe.predict(X_test) 
         probabilities = pipe.predict_proba(X_test)
@@ -49,5 +48,7 @@ def main():
         pred_vs_real[m[0]] = predictions
         pred_vs_real[m[0] + '_prob'] = probabilities[:, 1]
 
+    return pred_vs_real
+
 if __name__ == "__main__":
-    main()
+    pred_vs_real = main()

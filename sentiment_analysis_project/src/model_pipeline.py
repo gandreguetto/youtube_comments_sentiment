@@ -6,21 +6,19 @@ import re
 
 class TextCleaner(BaseEstimator, TransformerMixin):
     def __init__(self):
-        pass  # no hyperparameters needed for this step
+        self.nlp = spacy.load("en_core_web_sm")
 
     def fit(self, X, y=None):
-        return self  # no fitting needed
+        return self
 
     def transform(self, X):
-        return X.apply(self.text_cleaning)  # apply text cleaning function to each row
+        return X.apply(self.text_cleaning)
 
     def text_cleaning(self, text):
-        nlp = spacy.load("en_core_web_sm")
-        doc = nlp(text)
-        cleaned_text = ' '.join([token.lemma_ for token in doc])  # lemmatization
-        cleaned_text = re.sub(r'([^\s\w]|_)+', ' ', cleaned_text)  # keeps only letters and numbers
-        return re.sub(r'\s+', ' ', cleaned_text).strip()  # removes extra spaces
-
+        doc = self.nlp(text)
+        cleaned_text = ' '.join([token.lemma_ for token in doc])
+        cleaned_text = re.sub(r'([^\s\w]|_)+', ' ', cleaned_text)
+        return re.sub(r'\s+', ' ', cleaned_text).strip()
 
 def pipeline_function(model):
     return Pipeline([
